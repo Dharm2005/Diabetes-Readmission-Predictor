@@ -130,7 +130,7 @@ A Streamlit web application was developed to allow real-time prediction.
 ### 1️⃣ Clone Repository
 
 ``` bash
-git clone [<your-repository-link>](https://github.com/Dharm2005/Diabetes-Readmission-Predictor.git)
+git clone https://github.com/Dharm2005/Diabetes-Readmission-Predictor.git
 cd Diabetes Readmission Predictor
 ```
 
