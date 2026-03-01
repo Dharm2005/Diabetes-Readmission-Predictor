@@ -170,6 +170,11 @@ https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999
 
 ------------------------------------------------------------------------
 
+## Live Deployment
+Deployed using AWS EC2 instance.
+
+------------------------------------------------------------------------
+
 ## 📈 Future Improvements
 
 -   Model explainability using SHAP values
