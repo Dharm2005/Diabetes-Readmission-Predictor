@@ -4,9 +4,7 @@ An end-to-end Machine Learning project that predicts whether a diabetes
 patient will be **readmitted to the hospital within 30 days** using
 clinical and hospital encounter data.
 
-This project was developed as part of a Machine Learning Internship and
-demonstrates the complete ML lifecycle --- from raw data processing to
-application deployment.
+This repository contains the deployed Streamlit application for the Diabetes Patient Readmission Prediction System. The complete machine learning workflow (problem definition, data cleaning, EDA, feature engineering, model training, and evaluation) is available in the companion Machine Learning repository.
 
 ------------------------------------------------------------------------
 
