@@ -1,193 +1,343 @@
-# 🏥 Diabetes Patient Readmission Prediction System
 
-An end-to-end Machine Learning project that predicts whether a diabetes
-patient will be **readmitted to the hospital within 30 days** using
-clinical and hospital encounter data.
+# 🏥 Diabetes Patient Readmission Predictor
 
-This repository contains the deployed Streamlit application for the Diabetes Patient Readmission Prediction System. The complete machine learning workflow (problem definition, data cleaning, EDA, feature engineering, model training, and evaluation) is available in the companion Machine Learning repository.
+An interactive **Machine Learning-powered Streamlit application** that predicts the likelihood of 30-day hospital readmission among diabetic patients using demographic, clinical, medication, and hospital encounter information.
 
-------------------------------------------------------------------------
+The application uses a trained Logistic Regression pipeline developed using the **Diabetes 130-US Hospitals for Years 1999–2008** dataset from the UCI Machine Learning Repository.
+
+This repository contains the Streamlit application and the saved research model artifacts. The complete data preprocessing, exploratory analysis, feature engineering, and model development workflow is maintained in a separate repository.
+
+---
 
 ## 📌 Project Overview
 
-Hospital readmissions increase healthcare costs and indicate potential
-gaps in patient care.\
-The goal of this project is to build a predictive system that helps
-identify patients at **high risk of early readmission**.
+Hospital readmissions are an important healthcare outcome that can reflect patient management challenges and healthcare resource utilization.
 
-Dataset Used:
+The objective of this application is to demonstrate how machine learning can be used to estimate whether a diabetic patient may be readmitted within 30 days after hospital discharge.
 
-**Diabetes 130-US Hospitals for Years 1999--2008**\
-(UCI Machine Learning Repository)
+The application provides an interactive interface where users can enter:
 
-------------------------------------------------------------------------
+- Patient demographic information.
+- Hospital admission and discharge details.
+- Previous hospital visit statistics.
+- Diagnosis categories.
+- Diabetes medication information.
+- Laboratory test results.
 
-## ⚙️ Technologies & Tools
+Based on these inputs, the application generates a prediction using the trained Logistic Regression pipeline.
 
--   Python
--   Pandas
--   NumPy
--   Scikit-learn
--   XGBoost
--   Streamlit
--   Joblib
+---
 
-------------------------------------------------------------------------
+## 🤖 Selected Machine Learning Model
 
-## 🔄 Machine Learning Workflow
+**Model:** Logistic Regression
 
-### 1️⃣ Data Cleaning
+**Analysis Population:** Eligible-discharge cohort
 
--   Handled missing values
--   Removed noisy or low-impact features (`payer_code`)
--   Cleaned categorical variables
--   Converted diagnosis codes into meaningful medical groups
+**Decision Threshold:** 0.57
 
-------------------------------------------------------------------------
+The eligible-discharge model was selected based on validation Average Precision among the evaluated candidate models.
 
-### 2️⃣ Exploratory Data Analysis (EDA)
+The model uses a fitted Scikit-learn preprocessing pipeline, so the application does not require a separate preprocessing pipeline file.
 
--   Target distribution analysis
--   Numerical feature visualization
--   Categorical feature comparison with readmission
--   Correlation analysis using heatmaps
--   Clinical insights generation
+### Final Test Performance
 
-------------------------------------------------------------------------
+The following results were obtained from the held-out test set:
 
-### 3️⃣ Feature Engineering
 
-Created meaningful features representing treatment intensity and patient
-complexity:
+| Evaluation Metric | Result |
+| ------------------- | -------: |
+| Accuracy          | 77.91% |
+| ROC-AUC           | 0.6585 |
+| Average Precision | 0.2032 |
+| Precision         | 20.51% |
+| Recall            | 35.95% |
+| F1-score          | 26.12% |
+| Specificity       | 83.02% |
 
--   `total_diabetes_drugs` → Number of diabetes medications prescribed
--   `oral_med_flag` → Indicates oral diabetes medication usage
--   `is_polypharmacy` → Identifies patients taking multiple medications
+### Why Logistic Regression?
 
-Additional steps: - Category reduction using frequency thresholding -
-Proper handling of categorical variables - Prevention of data leakage
+Logistic Regression achieved the highest validation Average Precision among the evaluated candidate models.
 
-------------------------------------------------------------------------
+The model was selected because it provided a better validation-based precision-recall ranking than the other evaluated models for this imbalanced classification task.
 
-### 4️⃣ Preprocessing Pipeline
+The classification threshold was selected separately using validation F1-score and was not optimized using the test set.
 
-A preprocessing pipeline was built using **ColumnTransformer**:
+---
 
--   OneHotEncoding for categorical features
--   StandardScaler for numerical features
--   Stratified train-test split for imbalanced dataset handling
+## 🎯 How Prediction Works
 
-------------------------------------------------------------------------
+The original dataset contains three readmission categories:
 
-### 5️⃣ Model Building & Evaluation
 
-Models trained and compared:
+| Original Target | Meaning                   |
+| ----------------- | --------------------------- |
+| `<30`           | Readmitted within 30 days |
+| `>30`           | Readmitted after 30 days  |
+| `NO`            | No recorded readmission   |
 
--   Logistic Regression ✅ **Final Model**
--   Decision Tree
--   Random Forest
--   XGBoost
+These categories were converted into a binary classification target:
 
-Evaluation Metrics: - Confusion Matrix - Precision - Recall - F1 Score -
-ROC-AUC Score
+- `1` – Readmitted within 30 days.
+- `0` – Not readmitted within 30 days (`>30` or `NO`).
 
-**Logistic Regression** was selected as the final model due to balanced
-performance and strong recall for early readmission prediction.
+The application uses the positive-class probability generated by the fitted Logistic Regression pipeline.
 
-------------------------------------------------------------------------
+The saved classification threshold is **0.57**.
 
-## 🖥️ Streamlit Application
+```python
+probability = model.predict_proba(input_data)[0, 1]
 
-A Streamlit web application was developed to allow real-time prediction.
-
-### Application Features
-
--   User-friendly medical input form
--   Model-integrated prediction system
--   Readmission risk classification
--   Probability-based prediction output
-
-------------------------------------------------------------------------
-
-## 📁 Project Structure
-
-    Diabetes Readmission Predictor/
-    │
-    ├── model/
-    │   ├── final_model.pkl
-    │   ├── preprocessing_pipeline.pkl
-    │
-    ├── app.py
-    ├── requirements.txt
-    └── README.md
-
-------------------------------------------------------------------------
-
-## 🚀 Run Application Locally
-
-### 1️⃣ Clone Repository
-
-``` bash
-git clone https://github.com/Dharm2005/Diabetes-Readmission-Predictor.git
-cd Diabetes Readmission Predictor
+prediction = int(probability >= decision_threshold)
 ```
 
-### 2️⃣ Install Dependencies
 
-``` bash
+| Condition           | Application Output                     |
+| --------------------- | ---------------------------------------- |
+| Probability >= 0.57 | High predicted readmission likelihood  |
+| Probability < 0.57  | Lower predicted readmission likelihood |
+
+The probability displayed by the application is the model's positive-class probability estimate. It should not be interpreted as a clinically validated or calibrated individual risk.
+
+---
+
+## 🖥️ Application Features
+
+### 1. Patient Demographics
+
+Collects patient information, including:
+
+- Race.
+- Gender.
+- Age.
+- Payer code.
+
+### 2. Hospital Admission Information
+
+Allows users to provide:
+
+- Admission type.
+- Discharge disposition.
+- Admission source.
+- Medical specialty.
+- Total number of diagnoses.
+
+Death-related and hospice discharge categories are excluded from the eligible-discharge model's application options.
+
+### 3. Hospital Visit Statistics
+
+Includes:
+
+- Time spent in hospital.
+- Previous outpatient visits.
+- Previous emergency visits.
+- Previous inpatient visits.
+- Laboratory procedures.
+- Other procedures.
+- Number of medications.
+
+### 4. Diabetes Medications & Laboratory Results
+
+Includes:
+
+- Total diabetes medications.
+- Insulin usage.
+- Oral medication usage.
+- Medication changes.
+- Diabetes medication indicator.
+- A1C result.
+
+The application also calculates the `high_medication_count_10plus` feature from the entered number of medications.
+
+### 5. Automated Preprocessing & Prediction
+
+The application uses the fitted preprocessing pipeline stored inside the research model.
+
+It also:
+
+- Uses the saved validation-selected classification threshold.
+- Obtains categorical dropdown options from the fitted encoder.
+- Converts entered age into the corresponding approximate age-band midpoint used during model development.
+- Validates the input feature schema before prediction.
+- Displays the predicted class and positive-class probability.
+
+---
+
+## ⚙️ Technologies Used
+
+- Python
+- Pandas
+- Scikit-learn
+- Streamlit
+- Joblib
+- Machine Learning Pipelines
+
+---
+
+## 📂 Repository Structure
+
+```text
+Diabetes-Readmission-Predictor/
+│
+├── model/
+│   ├── research_final_model_eligible_discharge.pkl
+│   └── research_threshold_eligible_discharge.pkl
+│
+├── app.py
+├── requirements.txt
+└── README.md
+```
+
+### Model Artifacts
+
+
+| File                                          | Description                                                            |
+| ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `research_final_model_eligible_discharge.pkl` | Complete fitted Logistic Regression pipeline, including preprocessing. |
+| `research_threshold_eligible_discharge.pkl`   | Validation-selected decision threshold (0.57).                         |
+
+Both files must be present in the `model/` directory for the application to run.
+
+**Note:** A separate `preprocessing_pipeline.pkl` is not required because preprocessing is already included in the saved research model.
+
+---
+
+## 🚀 Run the Application Locally
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Dharm2005/Diabetes-Readmission-Predictor.git
+
+cd Diabetes-Readmission-Predictor
+```
+
+### 2. Create a Virtual Environment (Recommended)
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Activate it on macOS/Linux:
+
+```bash
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Run Streamlit Application
+### 4. Verify Model Files
 
-``` bash
+Make sure the following files exist:
+
+```text
+model/
+├── research_final_model_eligible_discharge.pkl
+└── research_threshold_eligible_discharge.pkl
+```
+
+These artifacts are generated in the machine learning pipeline repository:
+
+https://github.com/Dharm2005/diabetes-readmission-prediction-ml
+
+### 5. Run Streamlit
+
+```bash
 streamlit run app.py
 ```
 
 The application will automatically open in your browser.
 
-------------------------------------------------------------------------
-
-## 🎯 Prediction Output
-
-The application predicts:
-
--   ✅ **Low Risk of Readmission**
--   ⚠ **High Risk of Readmission**
-
-Output also includes prediction probability generated by the trained
-machine learning model.
-
-------------------------------------------------------------------------
+---
 
 ## 📊 Dataset Source
 
-UCI Machine Learning Repository\
-**Diabetes 130-US Hospitals Dataset (1999--2008)**\
-https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008
+**Diabetes 130-US Hospitals for Years 1999–2008**
 
-------------------------------------------------------------------------
+UCI Machine Learning Repository:
 
-## 📈 Future Improvements
+https://archive.ics.uci.edu/dataset/296/diabetes+130-us+hospitals+for+years+1999-2008
 
--   Model explainability using SHAP values
--   Cloud deployment (Streamlit Cloud/AWS)
--   Real-time hospital integration
--   Automated monitoring pipeline
+The dataset contains 101,766 hospital encounters from 130 US hospitals during 1999–2008.
 
-------------------------------------------------------------------------
+The application uses the eligible-discharge model developed from this dataset.
+
+---
+
+## 🔗 Related Repository
+
+The complete machine learning workflow is available in the separate preprocessing repository.
+
+**Diabetes Patient Readmission Prediction - Machine Learning Pipeline**
+
+https://github.com/Dharm2005/diabetes-readmission-prediction-ml
+
+It contains:
+
+- Problem definition.
+- Data cleaning.
+- Exploratory Data Analysis.
+- Feature engineering.
+- Patient-level data splitting.
+- Model comparison and evaluation.
+- Full-cohort and eligible-discharge research models.
+
+---
+
+## ☁️ Deployment
+
+The application was previously deployed using AWS EC2 infrastructure.
+
+The previous cloud deployment is currently inactive. The application can be executed locally by following the instructions above.
+
+---
+
+## ⚠️ Disclaimer & Limitations
+
+- This project is an educational and research-oriented Machine Learning demonstration.
+- The dataset represents historical hospital encounters from 1999–2008 and may not reflect current healthcare practices.
+- The model was evaluated on a specific dataset and has not undergone external clinical validation.
+- The displayed probability is a model estimate, not a guarantee of future readmission.
+- The application must not be used to make medical diagnoses, treatment decisions, or real-world clinical decisions.
+
+---
+
+## 💡 Future Improvements
+
+- Model explainability using SHAP.
+- Further feature analysis and model optimization.
+- Improved probability calibration.
+- External validation using independent healthcare datasets.
+- Containerization using Docker.
+- Cloud deployment and monitoring.
+- Improved user experience and input validation.
+
+---
 
 ## 👨‍💻 Author
 
-**Dharm Dobariya**\
+**Dharm Dobariya**
+
 Machine Learning Project
 
-------------------------------------------------------------------------
+---
 
 ## ⭐ Project Highlights
 
-✔ Complete ML Lifecycle Implementation\
-✔ Feature Engineering with Clinical Insight\
-✔ Pipeline-Based Modeling\
-✔ Imbalanced Classification Handling\
-✔ Interactive Streamlit Deployment
+- Interactive Streamlit application.
+- Research-based Logistic Regression pipeline.
+- Automated preprocessing and feature transformation.
+- Patient-level evaluation methodology.
+- Validation-selected classification threshold.
+- Probability-based prediction output.
+- Integration with a reproducible Machine Learning workflow.
